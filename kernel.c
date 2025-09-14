@@ -19,6 +19,7 @@
 static volatile unsigned short* const VGA = (unsigned short*)0xB8000;
 static uint8_t scancode = 0;
 static char keyb_char = '\0';
+static char keyb_pressed = 0;
 
 static const char scancode_table[128] = {
     0,  27, '1','2','3','4','5','6','7','8','9','0','-','=', '\b',
@@ -31,11 +32,17 @@ static const char scancode_table[128] = {
 void read_keyb()
 {
     keyb_char = '\0';
+    keyb_pressed = 0;
 
-    if (!(scancode & 0x80)) {
-        if (scancode <= 127) {
-            keyb_char = scancode_table[scancode];
-        }
+    if (scancode & 0x80) {
+        keyb_pressed = 0;
+        scancode = scancode & 0x7F;
+    } else if (!(scancode & 0x80)) {
+        keyb_pressed = 1;
+    }
+
+    if (scancode > 0 && scancode <= 127) {
+        keyb_char = scancode_table[scancode];
     }
 
     scancode = 0;
@@ -789,36 +796,31 @@ void tetris()
 
     // Main loop
     while (quit == 0) {
-        left = 0;
-        right = 0;
-        up = 0;
-        down = 0;
-        quit = 0;
-        pause = 0;
-
         read_keyb();
 
         switch (keyb_char) {
             case 'a':
-                left = 1;
+                left = keyb_pressed ? 1 : 0;
                 break;
             case 'd':
-                right = 1;
+                right = keyb_pressed ? 1 : 0;
                 break;
             case 'w':
-                up = 1;
+                up = keyb_pressed ? 1 : 0;
                 break;
             case 's':
-                down = 1;
+                down = keyb_pressed ? 1 : 0;
                 break;
             case 'q':
-                quit = 1;
+                quit = keyb_pressed ? 1 : 0;
                 break;
             case 'p':
-                pause = 1;
+                pause = keyb_pressed ? 1 : 0;
                 break;
             case 'r':
-                return;
+                if (keyb_pressed) {
+                    return;
+                }
         }
 
         if (next == -1) {
