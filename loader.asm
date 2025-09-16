@@ -1,8 +1,6 @@
 bits 16
 org 0x7c00 ; Start address for boot sector
 
-mov [boot_drive], dl
-
 ; Set up the stack
 mov bp, 0x9000
 mov sp, bp
