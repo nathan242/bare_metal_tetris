@@ -256,10 +256,18 @@ void draw_next_frame()
     }
 }
 
+static inline uint8_t get_rtc_register(int reg)
+{
+    outb(0x70, reg);
+    return inb(0x71);
+}
+
 // TODO
 int rand()
 {
-    return ticks_count;
+    uint8_t rtc_seconds = get_rtc_register(0x00);
+
+    return ticks_count+rtc_seconds;
 }
 
 #define GRID_SIZE_X 10
